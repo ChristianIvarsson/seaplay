@@ -1,0 +1,9 @@
+# Build artefacts
+*.o
+*.idb
+*.map
+*.bin
+*.elf
+*.hex
+
+.private
