@@ -108,17 +108,26 @@ typedef struct {
 #define uart       ((uart16550_t *)    UART_BASE)
 
 // FCR flags
-#define FCR_FIFOTRIG_1      (0x00000000)  // Trigger at one byte
-#define FCR_FIFOTRIG_4      (0x00000040)  // Trigger at four bytes
-#define FCR_FIFOTRIG_8      (0x00000080)  // Trigger at eight bytes
-#define FCR_FIFOTRIG_14     (0x000000C0)  // Trigger at fourteen bytes
 #define FCR_FIFOTRIG_MASK   (0x000000C0)
-
+#define FCR_FIFOTRIG_14     (0x000000C0)  // Trigger at fourteen bytes
+#define FCR_FIFOTRIG_8      (0x00000080)  // Trigger at eight bytes
+#define FCR_FIFOTRIG_4      (0x00000040)  // Trigger at four bytes
+#define FCR_FIFOTRIG_1      (0x00000000)  // Trigger at one byte
 #define FCR_MODE            (0x00000008)  // Toggle RXRDY/TXRDY pins mode.
 #define FCR_FLUSH_TX        (0x00000004)  // Reset TX FIFO
 #define FCR_FLUSH_RX        (0x00000002)  // Reset RX FIFO
 #define FCR_EN_FIFO         (0x00000001)  // Enable FIFO operation
 
+// LSR flags
+#define LSR_FIFO_DATA_ERR   (0x00000080)
+#define LSR_TX_EMPTY        (0x00000040)
 #define LSR_TXH_EMPTY       (0x00000020)
+#define LSR_BREAK_INT       (0x00000010)
+#define LSR_FRAMING_ERR     (0x00000008)
+#define LSR_PARITY_ERR      (0x00000004)
+#define LSR_OVERR_ERR       (0x00000002)
+#define LSR_RX_READY        (0x00000001)
+
+
 
 #endif
