@@ -53,6 +53,7 @@ ALLOBJS=\
 	obj/entry.o \
 	obj/main.o \
 	obj/interrupts.o \
+	obj/printf.o \
 	$(EXTRAOBJS)
 
 # hackjob...
@@ -62,6 +63,9 @@ obj/main.o : main.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 obj/interrupts.o : interrupts.c
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+obj/printf.o : printf.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 obj/entry.o : entry.s

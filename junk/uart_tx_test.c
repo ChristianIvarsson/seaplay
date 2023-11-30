@@ -4,15 +4,9 @@
 #include "../main.h"
 #include "uart_16550.h"
 
-inline void uartPutChar(const unsigned char ch) {
+void PrintChar(char c) {
     while (!(uart->LSR & LSR_TXH_EMPTY))   ;
-    uart->mode.operational.RXTX = ch;
-}
-
-int puts(const char *s) {
-    while (*s)
-        uartPutChar((unsigned char)*s++);
-    return 0;
+    uart->mode.operational.RXTX = c;
 }
 
 void play_code(void) {
@@ -20,7 +14,3 @@ void play_code(void) {
         puts( "Testing override\r\n");
     }
 }
-
-
-
-

@@ -80,10 +80,10 @@ typedef struct {
 
     // (5) Line Status Register
     //   7 - FIFO data error
-    //   6 - TX empty
-    //   5 - TX holding empty
-    //   4 - Break interrupt
-    //   3 - Framing Error
+    //   6 - TX empty          (Shift AND holding registers are empty)
+    //   5 - TX holding empty  (Holding register is empty)
+    //   4 - Break interrupt   (Received break signal)
+    //   3 - Framing Error     (Invalid stop bit(s))
     //   2 - Parity error
     //   1 - Overrun error
     //   0 - RX ready
