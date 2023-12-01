@@ -4,7 +4,12 @@
 #include "typedef.h"
 #include "main.h"
 
-#include "romfuncs.h"
+#define PCB100434407
+
+#include "hw/romfuncs.h"
+
+
+
 
 extern const int _s_appBase, _e_appBase;
 extern const int _sbss, _ebss;
