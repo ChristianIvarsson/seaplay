@@ -17,7 +17,7 @@ xxx  initialize console at 1Mbaud with no echo by doing  BR 3
 
 #define SERIALPORT  "/dev/ttyUSB1"
 
-#define TIMEOUT 2000
+#define TIMEOUT 2500
 
 void chomp(char * string);
 void values(char *s);
@@ -91,12 +91,12 @@ void values(char *s){
       a = strtoul(s+9, NULL, 16);   //printf( "0x%08X", a);
       d = strtoul(s+22, NULL, 16); // printf( " 0x%02X\n", d);
       
-      if ((a & 0xFF) == 0) { printf("0x%08X\r", a); fflush(stdout); }
+      if ((a & 0x0F) == 0) { printf("0x%08X\r", a); fflush(stdout); }
       
       a &= 0xFFFF;
       buff[a] = d;
       
-     // if ((a & 0xFF) == 0) { printf("."); fflush(stdout); }
+     // if ((a & 0x0F) == 0) { printf("."); fflush(stdout); }
      }
 
 }
