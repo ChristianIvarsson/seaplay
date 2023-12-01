@@ -10,6 +10,6 @@ The drive (ok, mine anway) needs to be supplied with 5 and 12V (maybe we can get
 There is a boot mode pin that needs to be grounded
 Serial is at 38400 baud 8N1 
 
-[image](images/p1300149.jpg)
+![image](images/p1300149.jpg)
 
 
