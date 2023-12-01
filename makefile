@@ -33,7 +33,7 @@ HEADERPATHS=\
 	-Ihw\
 	-I.private
 
-SHAREDC=$(OPTFLAGS) -ffunction-sections -nostartfiles -g3 -gdwarf-2 $(HEADERPATHS) $(PCBNO) $(LSINAME) $(ROMVER)
+SHAREDC=$(OPTFLAGS) -ffunction-sections -nostartfiles -ffreestanding $(HEADERPATHS) $(PCBNO) $(LSINAME) $(ROMVER)
 
 CFLAGS=$(TARGPROC) $(SHAREDC) -std=gnu99
 CPPFLAGS=$(TARGPROC) $(SHAREDC) 

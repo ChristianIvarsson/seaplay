@@ -1,0 +1,253 @@
+
+wiring:
+
+
+1  - output from controller thru series resistor.
+2  - +5V
+3  - TxD
+4  - RxD
+5  - GND
+key ------  edge <----> board
+6  - ? (has optional pull to ground)
+7  - ?
+8  - ?
+9  - /DIAG_ENABLE (Active low)
+10 - +12V
+
+
+--
+
+8N1 38400
+
+---
+
+
+SEA-2 Boot ROM 1.2
+Copyright Seagate  2005
+		                                                                
+Boot Cmds:
+ AP <addr>    (Set address pointer)
+ WT <data>    (write data, starting at current address pointer)
+ RD           (read data at address pointer)
+ GO           (jump(call?) code at address pointer)
+ TE           (toggle echo)
+ BR <divisor> (set baud rate, my base is 3Mbaud)
+ BT           (boot external eeprom)
+ ?            (help) 
+  (return repeats the last command)
+
+---
+guess that this chip is ARMv5T.
+
+
+The official on-chip flash location is 4000 0000
+
+dissassemble with aarch64-linux-gnu-objdump -b binary -m arm -D /tmp/4000.bin
+
+boot code is at 4000.0BD0 (after a few jumps)
+
+0x20 thru 0xA8 is a function list...
+
+Coprocessor 15 is the MMU on ARM. I had to deal with that when i was making the u-boot run on the mini210
+
+
+40000DFA  8-byte struct describing serial flash configs. 6 elements, 
+
+byte 5 is "read id command"
+
+00 12 04 0B 05 AB 04 04 
+00 11 02 0B 05 AB 04 04 
+20 13 04 0B 05 AB 04 06 
+BF 44 04 03 04 AB 04 05 
+BF 43 02 03 04 AB 04 05 
+1F 24 04 E8 08 9F 01 02 
+1F 23 02 E8 08 9F 01 02
+
+--
+
+Flash image header is 16 bytes long, first byte cannot be zero, at least one byte must not be 0xFF
+
+Primary image at offset zero, a secondary flash image exists in the larger flashes, none in the smaller ones
+external flash header
+
+Flash header:
+{
+  u32 numWords;
+  u32 spiAddr
+  u32 ramAddr
+  u16 checksumHelper; //adjust so that sum of all halfwords of header and data together is zero
+  bool unk0
+  u8 unk1
+}
+
+code must be entered in ARM mode
+
+--
+
+
+
+function address table:
+
+      20:       40000bd0      
+      24:       40000bb4      
+      28:       03272005      
+      2c:       40000561      
+      30:       00000000      
+      34:       400001f9      
+      38:       40000233  232 read a hexadecimal digit from uart  
+      3c:       40000189  188 toupper    
+      40:       40000219      
+      44:       40000159  158 isnum    
+      48:       40000167      
+      4c:       40000269  268 hex to ascii     
+      50:       400001b9  1b8 readchar w/echo     
+      54:       40000199      
+      58:       400001a5  1a4 putchar    
+      5c:       4000028d  28c prints a register in hex..    
+      60:       4000027d      
+      64:       400002c5      
+      68:       400002fd  2fc memset    
+      6c:       400002d9      
+      70:       400004f7      
+      74:       400006b9  6b8 print startup banner    
+      78:       400008d9      
+      7c:       4000040d      
+      80:       40000311      
+      84:       4000025d  25c  read a hex byte 
+      88:       400000ac     ( boot ) 
+      8c:       40000615      
+      90:       4000068f      
+      94:       40000455      
+      98:       40000903      
+      9c:       400009b1      
+      a0:       400009c5      
+      a4:       4000062b      
+      a8:       40000325      
+
+
+
+-
+
+function list:
+
+03272005
+
+400000ac     ( boot ) 
+40000159  158 isnum    
+40000167  166 Hexchar to binary   
+40000189  188 toupper    
+40000199  198 putchar   
+400001a5  1a4 puts    
+400001b9  1b8 readchar w/echo     
+400001f9  1f8 wait newline or question mark from serial
+40000219  218 isHexDigit   
+40000233  232 read a hexadecimal digit from uart  
+4000025d  25c read a hex byte 
+40000269  268 hex to ascii     
+4000027d  27c print newline   
+4000028d  28c prints a register in hex..    
+400002c5  2c4 memcopy    
+400002d9  2d8 memmove    
+400002fd  2fc memset    
+40000311  310 spiwaitNotBusy   
+40000325  324 spiExchange(spimode(?), out, in, len)  
+4000040d  40c readSpiAndChecksum (param0toSpiExchange, dstRamAddr, spiFlashAdr, numWords, cfgIdx) -> u16 checksum (sum of all halfwords)  
+40000455  454 ?
+*40000478 478 tryToBootFromSpi (param0toSpiExchange, cfgIdx, u32 flashReadStart) // does not return on success    
+400004f7  4f6 handleBogusISR   
+40000561  560 unusedSelfChecksummingFunc () -> u32; likely for factory test, to be called via serial console         
+40000615  614 flashconfigToSecondaryImageStartAddr (u8 cfgIdx) -> u32 addr
+4000062b  62a tryFindWorkingFlashConfig(param0toSpiExchange) -> u8 selectedConfig 
+4000068f  68e uart Init    
+400006b9  6b8 serial command console 
+400008d9  8d8 ? 
+40000903  902 ?   
+400009b1  9b0  j_fast_memcpy_stdlib   
+          9b4  fast_memcpy_stdlib
+400009c5  9c4  j_fast_memset
+          9c8  fast memset
+          9e8  j_fast_memzero  
+          9ec  fast_memzero
+          9f0  fast_memset_word
+          a30  j_fast_memcpy
+          a34  fast_memcpy
+40000bb4  ?         
+40000bd0  db0  j_entry  
+
+
+40000E32  start of string tables
+
+---
+ 
+ 
+periphs at 0x400D0000
+
+0x400D3000 is the uart peripheral base
+0x400D3000 is the data registe
+0x400D3014 is some status register
+0x400D5000 SPI controller  and it seems to support up to 16 bits per exchange
+
+0x40001700 Gpio base
+
+while(-1 < DAT_40000540[5] << 0x1a);   is how it waits for tx complete before writing a new char
+
+
+
+
+
+---------- FLASH ROM -------------------------
+
+RAM goes to at least 0x00011500 + 0xF9 * 4 = 0x118E4
+  that is a small secondary loader, starting 0x1C into flash
+
+SRAM exists at 0x04000000
+SRAM ends   at 0x0400C000. (SP is set there by second stage loader)
+It looks like there is 48K of ram at 0x04000000 and at least 80K at 0x0, for a total of 128K, which is believable
+
+
+
+Second stage loader is 0x400 bytes at flash 0x1c loaded to ram at 0x00115000
+
+
+
+
+custom code, I would not load at zero. I would start at 128 bytes in. 
+ The vector table is at zero. Keeping it around has benefits, 
+ like catching your own bugs, and being able to handle interrupts.
+
+
+
+magic u32 of the main firmware is 'Disc' (0x44697363)
+
+RAM:04000008 flashConfigIdx
+Two SPI addresses are checked for next-level image to load 0x10000 and 0x40000
+  which = FF FF FF FF  which contains a second copy.
+
+
+Next stage header is :
+
+u32 'Disc'
+u16 must_not_be_0xffff
+u8 unused[6]
+u32 spi_addr_of_additional_hdr //20 bytes there
+
+
+secondary 20-byte header is thus in flash at 0x00011000 and 0x00041000
+
+
+Second header format:
+u8 unused[10]
+u16 dataOfst;
+u32 ramLoadAddr;
+u32 size;
+
+SPI addr of next stage is addrOfThisHeader + thisHdr->dataOfst
+
+so, in this image the next loader is 0x114ec bytes from SPI addr 0x11014, loaded to .... 0x00000000
+
+
+For dram:
+  probably just easier to rewrite in C
+  Load the spi image into IDA with offsets and size I specified and enjoy :D
+
+

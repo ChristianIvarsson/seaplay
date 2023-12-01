@@ -7,8 +7,8 @@
 #include "LSI_TTB5501D.h"
 
 // Rename when it's known
-#elif defined (LSI_RUE)
-#include "LSI_RUE.h"
+#elif defined (LSI_L282802)
+#include "LSI_L282802.h"
 #else
 #error "Specify chip!"
 #endif
