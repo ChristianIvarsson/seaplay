@@ -6,7 +6,7 @@
 
 // While sorting out the PCB, MCU etc situation you can optionally define the pcb from here
 
- #define PCB100434407
+// #define PCB100434407
 // #define PCB100466824
 
 #include "hw/romfuncs.h"
