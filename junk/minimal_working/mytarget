@@ -1,0 +1,23 @@
+GCCPATH=
+BASENAME=arm-none-eabi
+
+# PCB name
+# Example PCBNO=-DPCB100466824
+PCBNO=-D
+
+# MCU name
+# Example LSINAME=-DLSI_TTB5501D
+LSINAME=-D
+
+# ROM version
+# Example ROMVER=-DROM_2_0
+ROMVER=-D
+
+
+
+# Upload command ( if you want "make upload" )
+# Example ULOADCMD=@scp bin/firmware.bin root@hallonpaj:/mnt/usb/user_code.bin
+# ULOADCMD=
+
+
+
