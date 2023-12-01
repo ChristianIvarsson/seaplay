@@ -58,7 +58,7 @@ int main(void) {
    }
  }
 
- fwrite(buff, 1, 65536, output);
+ fwrite(buff, 1, 4096, output);
  fclose(output);
 
  SerFini (&port);
