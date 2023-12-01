@@ -5,8 +5,12 @@
 
 // Very much unique to each rom!
 // Remember + 1 for thumb functions!
-#error "Change me!"
-#define ROM_PUTS   (0x10023C + 1)
+
+
+#define ROM_PUTS     (0x400001A4 + 1)
+#define ROM_UARTINIT (0x4000068E + 1)
+#define ROM_PUTCHAR  (0x40000198 + 1)
+#define ROM_GETCHARE (0x400001b8 + 1)
 
 
 #endif
