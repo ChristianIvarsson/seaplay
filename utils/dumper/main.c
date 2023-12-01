@@ -6,12 +6,18 @@
 #include "ssls3.h"
 
 /*
-initialize console at 1Mbaud with no echo by doing
+xxx  initialize console at 1Mbaud with no echo by doing  BR 3
 
-BR 3
-
-
+  or lets stay with 38400...
 */
+
+
+// the lower with this the better but it will slow things down.
+
+
+#define SERIALPORT  "/dev/ttyUSB1"
+
+#define TIMEOUT 2000
 
 void chomp(char * string);
 void values(char *s);
@@ -27,28 +33,28 @@ int main(void) {
  
  output = fopen("readback.bin", "wb");
  
- s = strdup("AP 40000000\r");
-
  SerInit (&port);
- SerOpen (&port, "/dev/ttyUSB1", 1000000);
+ //SerOpen (&port, SERIALPORT, 1000000); // BR 3 with 3Mbaud base, BR 6 with 6Mbaud base
+ SerOpen (&port, SERIALPORT, 38400); // default we know just works
 
- converse(&port, &s, 900);
+ s = strdup("AP 40000000\r");   // Set address to what should be the start of internal flash
+ converse(&port, &s, TIMEOUT);
  printf("set address 0 -> %s\n", s);
 
  
  free(s);  s = strdup("RD\r");
- converse(&port, &s, 900);
- values(s);
+ converse(&port, &s, TIMEOUT);
+ if (s) values(s);
  
- for (i = 0; i < 65535; i++) {
+ for (i = 0; i < 4096; i++) {  // the internal rom is only 0x1000 long. (0x0000-0x1000)
    free(s);  s = strdup("RD\r");
-   converse(&port, &s, 1000);
+   converse(&port, &s, TIMEOUT);
 
    if (s) {
      values(s);
    } else {
       free(s);  s = strdup("?");
-      converse(&port, &s, 1000);
+      converse(&port, &s, TIMEOUT);
    }
  }
 
@@ -74,6 +80,7 @@ void values(char *s){
 
   unsigned long a;
   uint8_t d;
+     if (strlen(s) < 23) { printf("Arg, partial reply!?? >%s<\n", s); return; }
 
      chomp(s+5);     
    //  printf("%s\n", s+5); 
