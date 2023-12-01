@@ -53,7 +53,6 @@ ALLOBJS=\
 	obj/entry.o \
 	obj/main.o \
 	obj/interrupts.o \
-	obj/printf.o \
 	$(EXTRAOBJS)
 
 # hackjob...
