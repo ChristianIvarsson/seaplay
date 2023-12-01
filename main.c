@@ -4,11 +4,11 @@
 #include "typedef.h"
 #include "main.h"
 
-#define PCB100434407
+// While sorting out the PCB, MCU etc situation you can optionally define the pcb from here
+// #define PCB100434407
+// #define PCB100466824
 
 #include "hw/romfuncs.h"
-
-
 
 
 extern const int _s_appBase, _e_appBase;
