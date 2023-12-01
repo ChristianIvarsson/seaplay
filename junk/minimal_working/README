@@ -1,0 +1,18 @@
+Create a .private folder in the root of this workspace and copy everything in this folder there
+
+Make sure these arguments inside the file "mytarget" are set according to your board's config
+PCBNO=
+LSINAME=
+ROMVER=
+
+
+You can leave GCCPATH unset if your toolchain is present in $PATH
+and BASENAME needs to be modified according to your toolchain's name
+
+
+
+The other two files of interest are "myobjs" where you can append additional object files to include in the build..
+and "mybuilds" where you place build steps for those object files
+
+
+

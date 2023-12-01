@@ -1,0 +1,5 @@
+
+# Additional build steps (specified by appending stuff to "EXTRAOBJS" in the file "myobjs"
+
+obj/uart_test.o : .private/uart_test.c
+	@$(CC) $(CFLAGS) -c $< -o $@

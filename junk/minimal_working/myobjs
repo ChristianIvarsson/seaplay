@@ -1,0 +1,5 @@
+
+# Additional object files to append to the build process
+
+EXTRAOBJS=\
+	obj/uart_test.o
