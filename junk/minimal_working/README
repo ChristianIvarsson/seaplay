@@ -6,13 +6,13 @@ LSINAME=
 ROMVER=
 
 
-You can leave GCCPATH unset if your toolchain is present in $PATH
-and BASENAME needs to be modified according to your toolchain's name
+You can leave GCCPATH unset if your toolchain is present in $PATH ..
+ .. and BASENAME needs to be modified according to your toolchain's name
 
 
 
-The other two files of interest are "myobjs" where you can append additional object files to include in the build..
-and "mybuilds" where you place build steps for those object files
+The other two files of interest are "myobjs" where you can append additional object files to include in the build ..
+ .. and "mybuilds" where you place build steps for those object files
 
 
 
