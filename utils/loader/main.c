@@ -17,6 +17,11 @@ This requires MUCH MUCH longer reply time than the dumper.
 
 */
 
+#define SERIALPORT  "/dev/ttyUSB1"
+
+#define TIMEOUT 2000
+
+
 void chomp(char * string);
 int value(char *s);
 
@@ -38,21 +43,21 @@ int main(int argc, char** argv) {
   }
 
  SerInit (&port);
- SerOpen (&port, "/dev/ttyUSB1", 38400); // yea this really should check for errors...
+ SerOpen (&port, SERIALPORT, 38400); // yea this really should check for errors...
 
  s = strdup("?");
- converse(&port, &s, 2000);
+ waitConverse(&port, &s, TIMEOUT*3, TIMEOUT );
  *s = 0;
  free(s);
 
  s = strdup("AP 00000080\r");
- converse(&port, &s, 2000);
- printf("set address 0 -> %s\n", s);
+ waitConverse(&port, &s, TIMEOUT*3, TIMEOUT );
+ if (s) printf("set address 0 -> %s\n", s);
 
  
  while ( (d = fgetc(input)) != EOF) {
    free(s);  s = NULL; asprintf(&s, "WT %02X\r", d);
-   converse(&port, &s, 2000);
+   waitConverse(&port, &s, TIMEOUT*3, TIMEOUT );
 
    if (s) {
      //printf(": %s", s);
@@ -90,6 +95,9 @@ int value(char *s){
 
   unsigned long a;
   uint8_t d;
+
+   
+ if (strlen(s) < 28) { printf("Arg, partial reply!?? >%s<\n", s); return -1; }
 
     chomp(s+8); 
    // printf("-VALUE-)%s", s+8);    

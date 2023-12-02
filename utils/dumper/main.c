@@ -37,7 +37,19 @@ int main(void) {
  //SerOpen (&port, SERIALPORT, 1000000); // BR 3 with 3Mbaud base, BR 6 with 6Mbaud base
  SerOpen (&port, SERIALPORT, 38400); // default we know just works
 
- s = strdup("AP 40000000\r");   // Set address to what should be the start of internal flash
+// Set address to what should be the start of internal flash
+
+/*
+   PCB100434407
+*/
+// s = strdup("AP 40000000\r"); // the firmware address for larger drives  
+
+/*
+  PCB100466824
+*/
+ s = strdup("AP 00100000\r");   // the firmware address for smaller drives
+ 
+ 
  waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
  printf("set address 0 -> %s\n", s);
 
@@ -100,4 +112,21 @@ void values(char *s){
      }
 
 }
+
+
+// These boards seem to stall for a LONG time sometimes, FSM for efficiency
+void CommFSM(SSLS_t * this, char **string) {
+
+  if ((retval = SerWrite(this, *string, strlen(*string))) != OK) 
+       return retval;
+  
+  
+
+
+}
+
+
+
+
+
 
