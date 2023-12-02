@@ -12,4 +12,8 @@ Serial is at 38400 baud 8N1
 
 ![image](images/p1300149.jpg)
 
+3 console connection types are known:
 
+![image](images/p1300195.jpg)
+![image](images/p1300194.jpg)
+![image](images/p1300191.jpg)
