@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdint.h>  // utin8_t
 #include <stdio.h> // printf, fopen
 #include <stdlib.h> // strtoul
@@ -24,12 +25,17 @@ void values(char *s);
 
 uint8_t buff[65538];
 
+int StrAccumChar( char ** s, char  c) ;
+int termCom(SSLS_t * this, char **string) ;
+
 int main(void) {
 
  SSLS_t port;
  char * s;
  long int i;
  FILE * output;
+ 
+ printf("Pausing movie...\n");
  
  output = fopen("readback.bin", "wb");
  
@@ -42,38 +48,42 @@ int main(void) {
 /*
    PCB100434407
 */
-// s = strdup("AP 40000000\r"); // the firmware address for larger drives  
+ s = strdup("AP 40000000\r"); // the firmware address for larger drives  
 
 /*
   PCB100466824
 */
- s = strdup("AP 00100000\r");   // the firmware address for smaller drives
+// s = strdup("AP 00100000\r");   // the firmware address for smaller drives
  
  
- waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
- printf("set address 0 -> %s\n", s);
-
+// waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
+ printf("Setting address of memory inquiry...\n");
+ termCom(&port, &s);
  
+ printf("Reading tids and bits from target system...\n");
  free(s);  s = strdup("RD\r");
- waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
+ termCom(&port, &s);
  if (s) values(s);
  
  for (i = 0; i < 4096; i++) {  // the internal rom is only 0x1000 long. (0x0000-0x1000)
    free(s);  s = strdup("RD\r");
-   waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
+   termCom(&port, &s);
 
    if (s) {
      values(s);
    } else {
       free(s);  s = strdup("?");
-      waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
+      termCom(&port, &s);
    }
  }
+ printf("\nWriting results to local filesystem, eeeeeee twang twang TSHHSHSHHSHHSHSHHSHSHHSHS....\n");
 
  fwrite(buff, 1, 4096, output);
  fclose(output);
 
  SerFini (&port);
+
+  printf("And back to my movie...\n");
 
   return 0;
 }
@@ -92,13 +102,11 @@ void values(char *s){
 
   unsigned long a;
   uint8_t d;
-     if (strlen(s) < 23) { printf("Arg, partial reply!?? >%s<\n", s); return; }
+     if (strlen(s) < 23) { printf("\nArg, partial reply!?? >%s<\n", s); return; }
 
      chomp(s+5);     
-   //  printf("%s\n", s+5); 
      
      if (strstr(s+5, "Addr") == (s+5)) {
-      //printf("Yes.\n");
       
       a = strtoul(s+9, NULL, 16);   //printf( "0x%08X", a);
       d = strtoul(s+22, NULL, 16); // printf( " 0x%02X\n", d);
@@ -108,22 +116,112 @@ void values(char *s){
       a &= 0xFFFF;
       buff[a] = d;
       
-     // if ((a & 0x0F) == 0) { printf("."); fflush(stdout); }
      }
 
 }
 
 
 // These boards seem to stall for a LONG time sometimes, FSM for efficiency
-void CommFSM(SSLS_t * this, char **string) {
+int termCom(SSLS_t * this, char **string) {
+
+  char buff[2];
+  uint8_t flag = 0;
+  int retval;
 
   if ((retval = SerWrite(this, *string, strlen(*string))) != OK) 
        return retval;
   
+  free(*string);  *string = NULL;
   
-
+  while ( read(this->fd, buff, 1) != -1) {
+          
+    if (StrAccumChar( string, buff[0]) == -1)     return -1;
+    
+    // ARG MADE ME WRITE A STATE MACHINE.
+    if (buff[0] == 0x0A) {                        flag = 1;
+    } else if ((buff[0] == '>') && (flag == 1)) { flag = 2;
+    } else if ((buff[0] == ' ') && (flag == 2)) { return 1;
+    } else                                        flag = 0;
+    
+  //  printf(".%s + 0x%02X @%d \n", *string, buff[0], flag);
+    
+  }
+  
+  return -1;
 
 }
+
+
+// those who see my hacks are doomed to repeat them
+
+int StrAccumChar( char ** s, char  c) {
+
+   char * tmp;
+   if (*s) {
+     if (asprintf(&tmp, "%s%c", *s, c) == -1) return -1;
+   } else {
+     if (asprintf(&tmp, "%c", c) == -1) return -1;
+   }  
+     
+   free(*s);   *s = tmp;
+   
+   return 1;
+   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
