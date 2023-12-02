@@ -38,23 +38,23 @@ int main(void) {
  SerOpen (&port, SERIALPORT, 38400); // default we know just works
 
  s = strdup("AP 40000000\r");   // Set address to what should be the start of internal flash
- converse(&port, &s, TIMEOUT);
+ waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
  printf("set address 0 -> %s\n", s);
 
  
  free(s);  s = strdup("RD\r");
- converse(&port, &s, TIMEOUT);
+ waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
  if (s) values(s);
  
  for (i = 0; i < 4096; i++) {  // the internal rom is only 0x1000 long. (0x0000-0x1000)
    free(s);  s = strdup("RD\r");
-   converse(&port, &s, TIMEOUT);
+   waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
 
    if (s) {
      values(s);
    } else {
       free(s);  s = strdup("?");
-      converse(&port, &s, TIMEOUT);
+      waitConverse(&port, &s, TIMEOUT*3, TIMEOUT/2);
    }
  }
 
