@@ -7,3 +7,7 @@
 *.hex
 
 .private
+.vscode
+
+utils/seamulti/dumps
+utils/seamulti/build/seag_test
