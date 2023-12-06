@@ -1,4 +1,4 @@
-#include "rpi.h"
+#include "shared.h"
 
 #include "seagate.h"
 // #include "serial.h"

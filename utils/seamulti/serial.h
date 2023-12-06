@@ -1,7 +1,7 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include "rpi.h"
+#include "shared.h"
 
 #include <string.h>
 #include <fcntl.h>
@@ -28,7 +28,5 @@ public:
 
 
 };
-
-
 
 #endif

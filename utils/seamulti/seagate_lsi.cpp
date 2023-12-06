@@ -1,23 +1,7 @@
 #include "seagate.h"
 #include "str.h"
 
-
-
-// Table is 128 bytes
-
 /*
- 1 - (resistor in series) Hi pull hi. _NOT_ connected to 3.3v rail so it's logically driven
- 2 - +5v
- 3 - Ser TX (38400)
- 4 - Ser RX (38400)
- 5 - Ground
-key - - - - - - - - front <- - - -> board
- 6 - Medium pull towards ground                    ( Has optional pull to ground )
- 7 - Medium pull towards ground
- 8 - Weak drive towards 3.3v
- 9 - _EN_DBG_      ( Active low )
-10 - +12v
-
 Boot Cmds:
  AP <addr>    - < set Access Pointer >
  WT <data>    - < Write (data) starting from Access Pointer >
@@ -146,7 +130,6 @@ bool seagate_lsi::readMem( u8 *data, u32 address, size_t len, bool sendAddress )
     char buf[256], tmp[32], *chPtr;
     bool res;
     s32 stVal;
-
 
     if ( sendAddress ) {
 sendAgain:

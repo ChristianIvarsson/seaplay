@@ -1,7 +1,7 @@
 #ifndef __SEAGATE_H__
 #define __SEAGATE_H__
 
-#include "rpi.h"
+#include "shared.h"
 
 #include "serial.h"
 

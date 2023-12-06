@@ -104,7 +104,6 @@ bool seagate_st::readMem( u8 *data, u32 address, size_t len, bool sendAddress ) 
     return true;
 }
 
-
 bool seagate_st::writeMem( u8 *data, u32 address, size_t len, bool sendAddress ) {
     return false;
 }

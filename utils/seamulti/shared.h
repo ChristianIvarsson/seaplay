@@ -1,5 +1,5 @@
-#ifndef __RPI_H__
-#define __RPI_H__
+#ifndef __SHARED_H__
+#define __SHARED_H__
 
 #include <stdio.h>
 #include <stdint.h>

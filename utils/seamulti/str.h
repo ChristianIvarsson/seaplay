@@ -1,7 +1,7 @@
 #ifndef __STR_H__
 #define __STR_H__
 
-#include "rpi.h"
+#include "shared.h"
 
 static bool isAsciiHex(const char *str) {
     size_t stLen;
