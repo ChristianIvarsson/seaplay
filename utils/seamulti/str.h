@@ -10,9 +10,9 @@ static bool isAsciiHex( const char *str ) {
         str++;
 
     size_t stLen = strlen( str );
-    if (stLen > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+    if ( stLen > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X') )
         str+=2;
-    else if (stLen > 1 && (str[0] == 'h' || str[0] == 'H'))
+    else if ( stLen > 1 && (str[0] == 'h' || str[0] == 'H') )
         str++;
 
     if ( *str == 0  )
@@ -138,6 +138,5 @@ static size_t asciiExtract( char *src, char *dst ) {
 
     return strLen;
 }
-
 
 #endif
