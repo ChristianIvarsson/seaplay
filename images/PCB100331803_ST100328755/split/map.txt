@@ -1,0 +1,18 @@
+
+00, 0000 - 7fff: (32k) block_0_1_2.image
+00, 8000 - ffff: (32k) sysblock.image
+
+01, 0000 - 7fff: (32k) block_0_1_2.image  (repeated)
+01, 8000 - ffff: (32k) block_3.image
+
+
+Still working on these...
+02, 0000 - ffff: (64k) block_4.image
+03, 0000 - ffff: (64k) block_5.image
+04, 0000 - ffff: (64k) block_6.image
+..
+
+04, 0000 - ????: makes it crash
+
+
+
