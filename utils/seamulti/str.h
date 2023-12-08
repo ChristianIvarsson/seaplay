@@ -3,18 +3,20 @@
 
 #include "shared.h"
 
-static bool isAsciiHex(const char *str) {
-    size_t stLen;
+static bool isAsciiHex( const char *str ) {
     if ( str == 0 )
         return false;
     while ( *str == ' ' || *str == 0x09 )
         str++;
-    if ( *str == 0  )
-        return false;
 
-    stLen = strlen( str );
+    size_t stLen = strlen( str );
     if (stLen > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
         str+=2;
+    else if (stLen > 1 && (str[0] == 'h' || str[0] == 'H'))
+        str++;
+
+    if ( *str == 0  )
+        return false;
 
     while ( *str != 0 ) {
         if ( (*str >= '0' && *str <= '9') ||
@@ -29,18 +31,17 @@ static bool isAsciiHex(const char *str) {
 }
 
 static u32 fromAsciiHex( const char *str ) {
-    size_t stLen;
     u32 retVal = 0;
     if ( str == 0 )
         return 0;
     while ( *str == ' ' || *str == 0x09 )
         str++;
-    if ( *str == 0  )
-        return 0;
 
-    stLen = strlen( str );
-    if (stLen > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+    size_t stLen = strlen( str );
+    if ( stLen > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X') )
         str+=2;
+    else if ( stLen > 1 && (str[0] == 'h' || str[0] == 'H') )
+        str++;
 
     while ( *str != 0 ) {
         retVal <<= 4;
@@ -53,12 +54,19 @@ static u32 fromAsciiHex( const char *str ) {
     return retVal;
 }
 
-
 static void asciiToLower( char *str ) {
     size_t stLen = strlen( str );
     for ( size_t i = 0; i < stLen; i++ ) {
         if ( str[ i ] >= 'A' && str[ i ] <= 'Z' )
             str[ i ] += 0x20;
+    }
+}
+
+static void asciiToUpper( char *str ) {
+    size_t stLen = strlen( str );
+    for ( size_t i = 0; i < stLen; i++ ) {
+        if ( str[ i ] >= 'a' && str[ i ] <= 'z' )
+            str[ i ] -= 0x20;
     }
 }
 
@@ -98,7 +106,6 @@ static void asciiClearLeading( char *str , size_t toClear ) {
     }
 }
 
-
 static char *asciiFirstChar( char *inString ) {
     // size_t skipped = 0;
 
@@ -131,8 +138,6 @@ static size_t asciiExtract( char *src, char *dst ) {
 
     return strLen;
 }
-
-
 
 
 #endif
