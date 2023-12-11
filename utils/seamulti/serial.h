@@ -23,6 +23,7 @@ public:
     bool flush();
 
     bool sendLine( const char *snd, char *rec, size_t recSize, bool noResp = false );
+    bool sendLineMK2( const char *snd, char *rec = nullptr, size_t recSize = 0 );
     bool sendLineManual( const char *snd, char *rec, size_t recSize );
     bool oneShot( const char *snd );
 

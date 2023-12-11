@@ -16,11 +16,21 @@ public:
 class seagate_st
     : public seagate_base {
 private:
-    char stLev;
+    char m_diagLev;
+    size_t m_blockSz;
+
+
+    bool readBytes( u8 *data, u32 address, size_t len );
+    bool readBlock( u8 *data, u32 address, size_t len );
+
 public:
     explicit seagate_st();
 
     bool actDiag();
+    bool setDiagLevel( char lev );
+
+    // This is bound to m_blockSz and made read-only to prevent external code from changing it
+    const size_t & blkDumpSz;
 
 // Present in all
     bool readMem( u8 *data, u32 address, size_t len, bool sendAddress = true );

@@ -19,7 +19,7 @@ Caveat: Setting length to 0 while writing will use the file length
 bool dumpTarget(seagate_base & seg, FILE *fp, u32 address, size_t len) {
 
     size_t readChunk, readLen = 0;
-    u8 buf[ 512 ];
+    u8 buf[ 768 ];
 
     if ( len == 0 ) {
         printf("Can't dump 0 bytes\n");
@@ -29,7 +29,7 @@ bool dumpTarget(seagate_base & seg, FILE *fp, u32 address, size_t len) {
     printf("Dumping\nAddress: %x\nLength: %lu\n\n\n", address, len);
 
     while (readLen < len) {
-        readChunk = ((len - readLen) > 128) ? 128 : (len - readLen);
+        readChunk = ((len - readLen) > 512) ? 512 : (len - readLen);
 
         printf("Address: %08x (%lu)..\n", address, len - readLen);
         if ( !seg.readMem( buf, address, readChunk, false ) ) {
@@ -54,7 +54,7 @@ bool dumpTarget(seagate_base & seg, FILE *fp, u32 address, size_t len) {
 bool uploadTarget(seagate_base & seg, FILE *fp, size_t fileSize, const u32 address, size_t len) {
 
     size_t writeChunk, writeLen = 0, writeAddr = address;
-    u8 buf[ 512 ];
+    u8 buf[ 768 ];
 
     if ( len == 0 )
         len = fileSize;
@@ -62,7 +62,7 @@ bool uploadTarget(seagate_base & seg, FILE *fp, size_t fileSize, const u32 addre
     printf("Writing\nAddress: %x\nLength: %lu\n\n\n", address, len);
 
     while (writeLen < len) {
-        writeChunk = ((len - writeLen) > 128) ? 128 : (len - writeLen);
+        writeChunk = ((len - writeLen) > 512) ? 512 : (len - writeLen);
 
         if ( fread( buf, 1, writeChunk, fp ) != writeChunk ) {
             printf("Could not read from file\n");
@@ -239,6 +239,7 @@ int sea_st(char *argv[]) {
 
     // seag_test  < /dev/ser_dev >  < st >  < op r / w >  < address >  < length >  < file >
     if (*argv[3] == 'r' || *argv[3] == 'R') {
+        seg.setDiagLevel( '1' );
         retVal = dump_st( seg, argv[6], fromAsciiHex( argv[4] ), fromAsciiHex( argv[5] ) );
     }
     else if (*argv[3] == 'w' || *argv[3] == 'W') {

@@ -243,6 +243,148 @@ bool serial::sendLine( const char *snd, char *rec, size_t recSize, bool noResp )
     return (rCnt > 0);
 }
 
+bool serial::sendLineMK2( const char *snd, char *rec, size_t recSize ) {
+    bool escSeq = false;
+    s32  ioStat, rCnt = 0;
+    char ch;
+
+    auto startTime = system_clock::now();
+    auto lastRxTime = startTime;
+    auto nowTime = startTime;
+
+    // Only send if present and has data
+    if ( snd != nullptr && snd[0] != 0 ) {
+        size_t stLen = strlen( snd );
+        // printf("sendLine sending: '%s'\n", snd);
+        if ( stLen > 0 && (ioStat = write(sPort, snd, stLen)) != stLen ) {
+            printf("Could not send line!\n");
+            return false;
+        }
+
+        do {
+            ioStat = read( sPort, &ch, 1 );
+
+            // Device error
+            if ( ioStat < 0 ) {
+                printf("sendLine strip TX error\n");
+                return false;
+            }
+
+            // Received something
+            else if ( ioStat > 0 ) {
+                // if ( ch >= ' ' && ch < 0x7f ) printf("sendLine strip: '%c' (%02x)\n", ch, ch);
+                // else printf("sendLine strip: 'NaN' (%02x)\n", ch);
+
+                // Update since last received
+                lastRxTime = system_clock::now();
+
+                // F*ck you ST firmware!
+                if ( escSeq ) {
+                    escSeq = false;
+                    continue;
+                } else if ( ch == 0x1b ) {
+                    escSeq = true;
+                    continue;
+                }
+
+                // If special character and _NOT_ tab, treat it as EOL
+                if ( rCnt > 0 && ch < ' ' && ch != 0x09 )
+                    goto startRx;
+                rCnt++;
+            }
+
+            nowTime = system_clock::now();
+
+            // Continously receiving crap. Just give up
+            if ( duration_cast<milliseconds>(nowTime - startTime).count() > 4000 ) {
+                printf("sendLine TX strip took too long!\n");
+                return false;
+            }
+
+            // No more than 125 ms between consecutive chars
+        } while ( duration_cast<milliseconds>(nowTime - lastRxTime).count() < 125 );
+
+        printf("sendLine didn't see expected EOL of sent data\n");
+        return false;
+    }
+
+startRx:
+    rCnt = 0;
+    escSeq = false;
+
+    // Must contain at least 2 chars due to null-termination!
+    if ( rec != nullptr && recSize > 1 ) {
+        do {
+            ioStat = read( sPort, &ch, 1 );
+
+
+            // Device error
+            if ( ioStat < 0 ) {
+                printf("sendLine RX error\n");
+                return false;
+            }
+
+            // Received something
+            else if ( ioStat > 0 ) {
+                // if ( ch >= ' ' && ch < 0x7f ) printf("sendLine RX: '%c' (%02x)\n", ch, ch);
+                // else printf("sendLine RX: 'NaN' (%02x)\n", ch);
+
+                // Update since last received
+                lastRxTime = system_clock::now();
+
+                // F*ck you ST firmware!
+                if ( escSeq ) {
+                    escSeq = false;
+                    continue;
+                } else if ( ch == 0x1b ) {
+                    escSeq = true;
+                    continue;
+                }
+
+                if ( ch < ' ' && ch != 0x09 ) {
+                    if ( rCnt > 0 ) {
+                        rec[ rCnt ] = 0;
+                        return true;
+                    }
+                    // -- ignore char --
+                } else {
+                    rec[ rCnt++ ] = ch;
+                    if ( rCnt >= recSize ) {
+                        // We no longer have room for a terminating 0
+                        printf("sendLine RX overflow!\n");
+                        return false;
+                    }
+                }
+            }
+
+            nowTime = system_clock::now();
+
+            // Continously receiving crap. Just give up
+            if ( duration_cast<milliseconds>(nowTime - startTime).count() > 4000 ) {
+                printf("sendLine took too long!\n");
+                return false;
+            }
+
+            // No more than 125 ms between consecutive chars
+        } while ( duration_cast<milliseconds>(nowTime - lastRxTime).count() < 125 );
+
+        // There is at least one command that wants to know the prompt without EOL so rely on the RX timeout as a workaround
+        if ( rCnt > 0 ) {
+            rec[ rCnt ] = 0;
+            return true;
+        }
+    } else {
+        if ( rec != nullptr && recSize > 0 )
+            rec[ 0 ] = 0;
+        // Can't receive so assume everything went smoothly
+        return true;
+    }
+
+    printf("sendLine timed out\n");
+
+    return false;
+}
+
 bool serial::oneShot( const char *snd ) {
 
     s32 ioStat;
@@ -284,84 +426,6 @@ bool serial::oneShot( const char *snd ) {
     } while ( 1 );
 
     return true;
-}
-
-bool serial::sendLineManual( const char *snd, char *rec, size_t recSize ) {
-
-    s32 ioStat;
-    char ch;
-    size_t rCnt = 0;
-    size_t stLen = strlen( snd );
-
-    bool escapeSec = false;
-
-    // printf("Sending: '%s'\n", snd);
-    if ( stLen > 0 && (ioStat = write(sPort, snd, stLen)) != stLen ) {
-        printf("Could not send manual line!\n");
-        return false;
-    }
-
-    auto oldTime = system_clock::now();
-    auto startTime = oldTime;
-    auto newTime = oldTime;
-
-    do {
-        ioStat = read(sPort, &ch, 1);
-        // Device error
-        if ( ioStat < 0 ) {
-            printf("sendLineManual error\n");
-            return false;
-        }
-        // Received something
-        else if ( ioStat > 0 ) {
-
-            // F*ck you ST firmware!
-            if ( escapeSec ) {
-                escapeSec = false;
-                continue;
-            } else if ( ch == 0x1b ) {
-                escapeSec = true;
-                continue;
-            }
-
-            // printf("ch: %02x\n", ch);
-            // if ( ch > 0x20 && ch < 0x7f )
-            // printf("Rec: '%c'\n", ch);
-
-            oldTime = system_clock::now();
-
-            // || ch == '>' 
-            // Special characters are not to be stored!
-            if ( ch < ' ' ) {
-                // nl or cr means the line is done.
-                // Take into account that it could start with one of those tho so check counts
-                if ( rCnt > 0 && (ch == '\n' || ch == '\r') )
-                    break;
-            } else if ( rCnt > 0 || (ch != ' ' && ch != 0x09) )  {
-                if ( rCnt > (recSize - 2) ) {
-                    printf("sendLineManual: Buffer too small for received line!");
-                    return false;
-                }
-
-                rec[ rCnt++ ] = ch;
-            }
-        }
-
-        newTime = system_clock::now();
-
-        if ( duration_cast<milliseconds>(newTime - startTime).count() > 1000 ) {
-            printf("sendLineManual took too long!\n");
-            return false;
-        }
-
-    } while ( 1 );
-
-    // Terminate string
-    rec[ rCnt ] = 0;
-
-    // printf("Received str: %s\n", rec);
-
-    return (rCnt > 0);
 }
 
 bool serial::close() {
