@@ -1,3 +1,19 @@
+Dumper is a program to read the internal firmware of the chip
+  this is used to locate the basic IO functions of new boards added to the project
+  
+Loader is a program to send your own software to the hard drive board.
+ It writes you software to address 0x80 so use the following process
+  - exit terminals with the board
+  - run loader (./a.out ../../bin/firmware.bin)
+  - connect with the terminal
+  - AP 80
+    this sets the address pointer to 0x80
+  - GO
+    this runs your program
+    
+   
+--------
+
 
 wiring:
 

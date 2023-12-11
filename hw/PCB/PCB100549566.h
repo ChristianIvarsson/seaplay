@@ -1,0 +1,1 @@
+// Rue small controller

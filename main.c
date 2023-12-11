@@ -5,8 +5,11 @@
 #include "main.h"
 
 // While sorting out the PCB, MCU etc situation you can optionally define the pcb from here
+
 // #define PCB100434407
+
 // #define PCB100466824
+//   #define ROM_2_0
 
 #include "hw/romfuncs.h"
 
@@ -38,16 +41,12 @@ void initData(void) {
 
 int mainEntry(void) {
 
-    puts_t puts;
-
     initData();
 
     play_code();
 
     // Verified working but currently unused
     // initVec();
-
-    puts = (puts_t)ROM_PUTS;
 
     while ( 1 ) {
         puts( "Hello world\r\n" );

@@ -1,7 +1,7 @@
 #ifndef __TYPEDEF_H__
 #define __TYPEDEF_H__
 
-#include <stdio.h>
+// #include <stdio.h>
 #include <stdint.h>
 
 typedef uint64_t u64;

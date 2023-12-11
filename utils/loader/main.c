@@ -17,8 +17,15 @@ This requires MUCH MUCH longer reply time than the dumper.
 
 */
 
+#define SERIALPORT  "/dev/ttyUSB1"
+
+#define TIMEOUT 5000
+
+
 void chomp(char * string);
 int value(char *s);
+int StrAccumChar( char ** s, char  c) ;
+int termCom(SSLS_t * this, char **string) ;
 
 int main(int argc, char** argv) {
 
@@ -37,22 +44,27 @@ int main(int argc, char** argv) {
       return -1;
   }
 
- SerInit (&port);
- SerOpen (&port, "/dev/ttyUSB1", 38400); // yea this really should check for errors...
+ printf("Putting down cup of coffee...\n");
 
+ SerInit (&port);
+ SerOpen (&port, SERIALPORT, 38400); // yea this really should check for errors...
+ 
+ 
+ // sync.
+ printf("Synchronizing host...\n"); // well it sounds good anyhow
  s = strdup("?");
- converse(&port, &s, 2000);
- *s = 0;
+ termCom(&port, &s);
  free(s);
 
- s = strdup("AP 00000080\r");
- converse(&port, &s, 2000);
- printf("set address 0 -> %s\n", s);
+ // set address
+ printf("Setting target address...\n");
+ s = strdup("AP 00000080\r");  // our code goes to 0x80, this seems to have the most ram room.
+ termCom(&port, &s);
 
- 
+ printf("Uploading artistic binary media to RAM...\n");
  while ( (d = fgetc(input)) != EOF) {
    free(s);  s = NULL; asprintf(&s, "WT %02X\r", d);
-   converse(&port, &s, 2000);
+    termCom(&port, &s);
 
    if (s) {
      //printf(": %s", s);
@@ -65,10 +77,13 @@ int main(int argc, char** argv) {
        break; // hopefully this doesn't happen... ever casue otherwise I'll have write more code...  
    }
  } 
+ printf("\n");
 
  if (d == EOF) { 
    printf("SUCCESS!!!!\n"); // ¯\_('')_/¯
  }
+ 
+ printf("AAAAAnd resuming coffee consumption...\n");
 
  fclose(input);
  SerFini (&port);
@@ -91,21 +106,103 @@ int value(char *s){
   unsigned long a;
   uint8_t d;
 
-    chomp(s+8); 
-   // printf("-VALUE-)%s", s+8);    
+   
+ if (strlen(s) < 28) { printf("Arg, partial reply!?? >%s<\n", s); return -1; }
+
+    chomp(s+8);  
      
      if (strstr(s+8, "Addr") == (s+8)) {
-       //printf("OK, ");
        a = strtoul(s+13, NULL, 16); //  printf( " a=0x%08X", a);
        d = strtoul(s+26, NULL, 16); //  printf( " d=0x%02X\n", d);
-
-      // if ((a & 0xFF) == 0) { printf("0x%08X\r", a); fflush(stdout); }  
            
-       printf("0x%08X\r", a); fflush(stdout);
+       if ((a & 0x0F) == 0) { printf("0x%08X\r", a); fflush(stdout);}
        
        return d;
        
      }
   return -1;
 }
+
+
+
+// These boards seem to stall for a LONG time sometimes, FSM for efficiency
+int termCom(SSLS_t * this, char **string) {
+
+  char buff[2];
+  uint8_t flag = 0;
+  int retval;
+
+  if ((retval = SerWrite(this, *string, strlen(*string))) != OK) 
+       return retval;
+  
+  free(*string);  *string = NULL;
+  
+  while ( read(this->fd, buff, 1) != -1) {
+          
+    if (StrAccumChar( string, buff[0]) == -1)     return -1;
+    
+    // ARG MADE ME WRITE A STATE MACHINE.
+    if (buff[0] == 0x0A) {                        flag = 1;
+    } else if ((buff[0] == '>') && (flag == 1)) { flag = 2;
+    } else if ((buff[0] == ' ') && (flag == 2)) { return 1;
+    } else                                        flag = 0;
+    
+    
+  }
+  
+  return -1;
+
+}
+
+
+// those who see my hacks are doomed to repeat them
+
+int StrAccumChar( char ** s, char  c) {
+
+   char * tmp;
+   if (*s) {
+     if (asprintf(&tmp, "%s%c", *s, c) == -1) return -1;
+   } else {
+     if (asprintf(&tmp, "%c", c) == -1) return -1;
+   }  
+     
+   free(*s);   *s = tmp;
+   
+   return 1;
+   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
